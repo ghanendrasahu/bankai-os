@@ -69,6 +69,7 @@ export function registerRunsRoutes(app: FastifyInstance): void {
       badRequest(reply, `run cannot be cancelled from status ${run.status}`);
       return;
     }
+    app.runAborts.get(run.id)?.abort();
     return app.db.runs.appendEvent(run.id, {
       type: "cancelled",
       at: new Date().toISOString(),

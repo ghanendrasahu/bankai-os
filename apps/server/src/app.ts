@@ -1,3 +1,5 @@
+import type { AgentRuntime } from "@bankai/agent";
+import { AgentRuntime as AgentRuntimeImpl } from "@bankai/agent";
 import type { BankaiConfig } from "@bankai/config";
 import type { BankaiDb } from "@bankai/db";
 import type { FastifyError } from "fastify";
@@ -23,8 +25,20 @@ export function buildServer({ config, db }: BuildServerOptions) {
 
   app.decorate("config", config);
   app.decorate("db", db);
+  const runtime: AgentRuntime = new AgentRuntimeImpl(db);
+  app.decorate("runtime", runtime);
+  app.decorate("runAborts", new Map<string, AbortController>());
 
   app.register(cors, { origin: true, methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"] });
+
+  app.addContentTypeParser("application/json", { parseAs: "buffer" }, (_request, body, done) => {
+    try {
+      const text = body.toString("utf8").trim();
+      done(null, text ? JSON.parse(text) : undefined);
+    } catch (error) {
+      done(error as Error, undefined);
+    }
+  });
 
   app.addHook("onRequest", requireAuth);
 

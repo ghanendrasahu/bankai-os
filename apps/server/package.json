@@ -12,6 +12,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@bankai/agent": "0.1.0",
     "@bankai/config": "0.1.0",
     "@bankai/contracts": "0.1.0",
     "@bankai/db": "0.1.0",
