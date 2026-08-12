@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Bankai runtime data
+storage/db/
+storage/workspaces/
+storage/logs/
+storage/uploads/
+
+# Config with secrets (keys are entered via Settings UI, never committed)
+config/bankai.json
+
+# Env
+.env
+.env.local
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

@@ -1,0 +1,25 @@
+{
+  "name": "bankai-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bankai OS - personal autonomous agent platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "dev": "concurrently -n server,dashboard -c auto \"npm:dev:server\" \"npm:dev:dashboard\"",
+    "dev:server": "npm run dev --workspace=@bankai/server",
+    "dev:dashboard": "npm run dev --workspace=@bankai/dashboard",
+    "start": "npm run start --workspace=@bankai/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
