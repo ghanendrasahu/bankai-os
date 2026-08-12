@@ -3,9 +3,12 @@ import { AgentRuntime as AgentRuntimeImpl } from "@bankai/agent";
 import type { BankaiConfig } from "@bankai/config";
 import type { BankaiDb } from "@bankai/db";
 import type { TaskScheduler } from "@bankai/tasks";
-import type { FastifyError } from "fastify";
+import type { FastifyError, FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
+import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { requireAuth } from "./auth.js";
 import { registerRoutes } from "./routes/index.js";
 import type { ApiError } from "./errors.js";
@@ -16,7 +19,7 @@ export interface BuildServerOptions {
   scheduler: TaskScheduler;
 }
 
-export function buildServer({ config, db, scheduler }: BuildServerOptions) {
+export async function buildServer({ config, db, scheduler }: BuildServerOptions) {
   const app = Fastify({
     logger: {
       level: config.LOG_LEVEL,
@@ -54,15 +57,35 @@ export function buildServer({ config, db, scheduler }: BuildServerOptions) {
     reply.code(error.statusCode ?? 500).send({ error: body });
   });
 
-  app.setNotFoundHandler((request, reply) => {
-    reply.code(404).send({ error: { code: "not_found", message: `route ${request.method} ${request.url} not found` } });
-  });
-
   app.get("/health", async () => {
     return { status: "ok", uptime: process.uptime() };
   });
 
-  registerRoutes(app);
+  app.register(
+    async (scoped) => {
+      registerRoutes(scoped);
+    },
+    { prefix: "/api" }
+  );
+
+  await registerStaticSpa(app);
 
   return app;
+}
+
+async function registerStaticSpa(app: FastifyInstance): Promise<void> {
+  const distDir = fileURLToPath(new URL("../../dashboard/dist", import.meta.url));
+  const hasStatic = existsSync(distDir);
+
+  if (hasStatic) {
+    await app.register(fastifyStatic, { root: distDir, wildcard: false, index: ["index.html"] });
+  }
+
+  app.setNotFoundHandler((request, reply) => {
+    if (request.method === "GET" && hasStatic) {
+      void reply.sendFile("index.html");
+      return;
+    }
+    reply.code(404).send({ error: { code: "not_found", message: `route ${request.method} ${request.url} not found` } });
+  });
 }

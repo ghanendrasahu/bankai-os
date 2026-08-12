@@ -10,9 +10,9 @@ function extractToken(request: FastifyRequest): string | undefined {
 }
 
 export async function requireAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  if (!request.url.startsWith("/api")) return;
   const token = request.server.config.BANKAI_TOKEN;
   if (!token) return;
-  if (request.routeOptions.url === "/health") return;
   const provided = extractToken(request);
   if (!provided || provided !== token) {
     unauthorized(reply);
