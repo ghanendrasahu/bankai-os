@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import Database from "better-sqlite3";
-import { migrations } from "./migrations/0001-initial.js";
+import { migrations } from "./migrations/index.js";
 import { runMigrations } from "./migrations/runner.js";
 import {
   AgentsRepository,

@@ -494,6 +494,27 @@ export class MemoryRepository {
     return row ? mapMemory(row) : undefined;
   }
 
+  search(agentId: string, query: string, limit = 5): Memory[] {
+    const terms = query
+      .split(/\s+/)
+      .filter((term) => term.length > 0)
+      .slice(0, 8)
+      .map((term) => `"${term.replaceAll('"', '""')}"`);
+    if (terms.length === 0) return [];
+    const match = terms.join(" AND ");
+    const rows = this.db
+      .prepare(
+        `SELECT m.id, m.agent_id, m.kind, m.content, m.created_at
+         FROM memory_fts f
+         JOIN memory m ON m.rowid = f.rowid
+         WHERE m.agent_id = ? AND memory_fts MATCH ?
+         ORDER BY rank
+         LIMIT ?`
+      )
+      .all(agentId, match, Math.max(1, Math.min(limit, 20))) as MemoryRow[];
+    return rows.map(mapMemory);
+  }
+
   create(input: MemoryInput): Memory {
     const now = new Date().toISOString();
     const id = newId("mem");

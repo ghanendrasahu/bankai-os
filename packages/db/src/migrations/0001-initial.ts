@@ -86,5 +86,3 @@ export const initialMigration: Migration = {
     db.exec(INITIAL_SCHEMA);
   },
 };
-
-export const migrations: Migration[] = [initialMigration];
