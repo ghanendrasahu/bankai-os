@@ -12,6 +12,7 @@
   "dependencies": {
     "@bankai/contracts": "0.1.0",
     "@bankai/db": "0.1.0",
+    "@bankai/tools": "0.1.0",
     "openai": "^4.77.0"
   },
   "devDependencies": {

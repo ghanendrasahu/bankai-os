@@ -1,12 +1,19 @@
-import type { RunEvent, ToolCall } from "@bankai/contracts";
+import type { RunEvent, ToolCall, Memory } from "@bankai/contracts";
 import type { Message } from "@bankai/contracts";
 import type { BankaiDb } from "@bankai/db";
+import {
+  apiToolsFor,
+  builtinRegistry,
+  type ToolContext,
+  type ToolRegistry,
+} from "@bankai/tools";
 import OpenAI from "openai";
 import { resolveProviderKeys } from "./keys.js";
 import { parseModel } from "./models.js";
 import { createClient } from "./providers.js";
 
 const now = (): string => new Date().toISOString();
+const MAX_TOOL_ITERATIONS = 8;
 
 type ChatMessageParam = OpenAI.Chat.ChatCompletionMessageParam;
 
@@ -18,7 +25,9 @@ function toToolCallsParam(toolCalls: ToolCall[]): OpenAI.Chat.ChatCompletionMess
   }));
 }
 
-function mapToolCallChunks(chunks: OpenAI.Chat.ChatCompletionChunk["choices"][number]["delta"]["tool_calls"]): ToolCall[] {
+function mapToolCallChunks(
+  chunks: OpenAI.Chat.ChatCompletionChunk["choices"][number]["delta"]["tool_calls"]
+): ToolCall[] {
   const acc: Array<{ id: string; name: string; args: string }> = [];
   for (const chunk of chunks ?? []) {
     const index = chunk.index;
@@ -35,10 +44,15 @@ function mapToolCallChunks(chunks: OpenAI.Chat.ChatCompletionChunk["choices"][nu
       if (chunk.function?.arguments) existing.args += chunk.function.arguments;
     }
   }
-  return acc.filter((call) => call.id && call.name).map((call) => ({ ...call, args: call.args || "{}" }));
+  return acc
+    .filter((call) => call.id && call.name)
+    .map((call) => ({ ...call, args: call.args || "{}" }));
 }
 
-function buildChatMessages(agent: { systemPrompt: string }, history: Message[]): ChatMessageParam[] {
+function buildChatMessages(
+  agent: { systemPrompt: string },
+  history: Message[]
+): ChatMessageParam[] {
   const messages: ChatMessageParam[] = [];
   if (agent.systemPrompt) {
     messages.push({ role: "system", content: agent.systemPrompt });
@@ -67,12 +81,41 @@ function buildChatMessages(agent: { systemPrompt: string }, history: Message[]):
   return messages;
 }
 
+function buildSystemPrompt(base: string, memories: Memory[]): string {
+  if (memories.length === 0) return base;
+  const section = [
+    "## Relevant memories",
+    ...memories.map((m) => `- [${m.kind}] ${m.content}`),
+  ].join("\n");
+  return base ? `${base}\n\n${section}` : section;
+}
+
 function isAbort(signal: AbortSignal | undefined, error: unknown): boolean {
   return signal?.aborted === true || (error instanceof Error && error.name === "AbortError");
 }
 
+export interface AgentRuntimeOptions {
+  registry?: ToolRegistry;
+  clientFactory?: (provider: string, apiKey: string | undefined) => OpenAI;
+}
+
 export class AgentRuntime {
-  constructor(private readonly db: BankaiDb) {}
+  private readonly registry: ToolRegistry;
+  private readonly clientFactory: (provider: string, apiKey: string | undefined) => OpenAI;
+  private readonly usesDefaultClient: boolean;
+
+  constructor(
+    private readonly db: BankaiDb,
+    options: AgentRuntimeOptions = {}
+  ) {
+    this.registry = options.registry ?? builtinRegistry();
+    this.clientFactory = options.clientFactory ?? createClient;
+    this.usesDefaultClient = options.clientFactory === undefined;
+  }
+
+  private toolContext(agentId: string): ToolContext {
+    return { agentId, db: this.db };
+  }
 
   async *run(runId: string, signal?: AbortSignal): AsyncGenerator<RunEvent> {
     const run = this.db.runs.byId(runId);
@@ -107,51 +150,31 @@ export class AgentRuntime {
       const { provider, model } = parseModel(agent.model);
       const keys = resolveProviderKeys(this.db);
       const apiKey = keys[provider];
-      if (!apiKey && provider !== "lmstudio") {
+      if (!apiKey && provider !== "lmstudio" && this.usesDefaultClient) {
         throw new Error(`no API key configured for provider "${provider}"`);
       }
-      const client = createClient(provider, apiKey);
+      const client = this.clientFactory(provider, apiKey);
 
       const history = run.conversationId
         ? this.db.messages.listByConversation(run.conversationId)
         : [];
-      const messages = buildChatMessages(agent, history);
+      const relevantMemories = this.db.memory.search(agent.id, run.prompt, 5);
+      const systemPrompt = buildSystemPrompt(agent.systemPrompt, relevantMemories);
+      const messages = buildChatMessages({ systemPrompt }, history);
+      const apiTools = apiToolsFor(agent.tools, this.registry);
 
-      const stream = await client.chat.completions.create(
-        {
-          model,
-          messages,
-          stream: true,
-        },
-        { signal }
-      );
-
-      let fullText = "";
-      let toolCallChunks: OpenAI.Chat.ChatCompletionChunk["choices"][number]["delta"]["tool_calls"] = [];
-
-      for await (const chunk of stream) {
-        const delta = chunk.choices[0]?.delta;
-        if (delta?.content) {
-          fullText += delta.content;
-          this.db.runs.appendTextDelta(runId, delta.content);
-          yield { type: "delta", at: now(), text: delta.content };
-        }
-        if (delta?.tool_calls) {
-          toolCallChunks = [...toolCallChunks, ...delta.tool_calls];
-        }
-        if (signal?.aborted) break;
-      }
-
-      const toolCalls = mapToolCallChunks(toolCallChunks);
-
-      if (run.conversationId) {
-        this.db.messages.create({
-          conversationId: run.conversationId,
-          role: "assistant",
-          content: fullText,
-          toolCalls: toolCalls.length ? toolCalls : null,
-        });
-        this.db.conversations.touch(run.conversationId);
+      for await (const event of this.executeConversation({
+        runId,
+        agentId: agent.id,
+        conversationId: run.conversationId,
+        allowedTools: agent.tools,
+        model,
+        client,
+        messages,
+        apiTools,
+        signal,
+      })) {
+        yield event;
       }
 
       if (signal?.aborted) {
@@ -180,5 +203,133 @@ export class AgentRuntime {
       this.db.runs.setStatus(runId, "failed", message);
       yield failed;
     }
+  }
+
+  private async *executeConversation(params: {
+    runId: string;
+    agentId: string;
+    conversationId: string | null;
+    allowedTools: string[];
+    model: string;
+    client: OpenAI;
+    messages: ChatMessageParam[];
+    apiTools: OpenAI.Chat.ChatCompletionTool[] | undefined;
+    signal?: AbortSignal;
+  }): AsyncGenerator<RunEvent> {
+    const { runId, agentId, conversationId, allowedTools, model, client, apiTools, signal } = params;
+    let messages = params.messages;
+
+    for (let iteration = 0; iteration <= MAX_TOOL_ITERATIONS; iteration++) {
+      const stream = await client.chat.completions.create(
+        { model, messages, stream: true, tools: apiTools },
+        { signal }
+      );
+
+      let fullText = "";
+      let toolCallChunks: OpenAI.Chat.ChatCompletionChunk["choices"][number]["delta"]["tool_calls"] = [];
+
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta;
+        if (delta?.content) {
+          fullText += delta.content;
+          this.db.runs.appendTextDelta(runId, delta.content);
+          yield { type: "delta", at: now(), text: delta.content };
+        }
+        if (delta?.tool_calls) {
+          toolCallChunks = [...toolCallChunks, ...delta.tool_calls];
+        }
+        if (signal?.aborted) break;
+      }
+
+      if (signal?.aborted) return;
+      const toolCalls = mapToolCallChunks(toolCallChunks);
+
+      const assistantMessage: ChatMessageParam = toolCalls.length
+        ? {
+            role: "assistant",
+            content: fullText || null,
+            tool_calls: toolCalls.map((call) => ({
+              id: call.id,
+              type: "function",
+              function: { name: call.name, arguments: call.args },
+            })),
+          }
+        : { role: "assistant", content: fullText };
+
+      if (conversationId) {
+        this.db.messages.create({
+          conversationId,
+          role: "assistant",
+          content: fullText,
+          toolCalls: toolCalls.length ? toolCalls : null,
+        });
+      }
+
+      if (toolCalls.length === 0) {
+        messages = [...messages, assistantMessage];
+        return;
+      }
+
+      const toolResults: ChatMessageParam[] = [];
+      for (const call of toolCalls) {
+        this.db.runs.appendEvent(runId, {
+          type: "tool_call",
+          at: now(),
+          id: call.id,
+          name: call.name,
+          args: call.args,
+        });
+        yield { type: "tool_call", at: now(), id: call.id, name: call.name, args: call.args };
+
+        const tool = this.registry.get(call.name);
+        const allowed = allowedTools.includes(call.name);
+        let output: string;
+        if (!allowed || !tool) {
+          output = `error: tool "${call.name}" is not enabled for this agent`;
+        } else {
+          try {
+            const args = parseJsonArgs(call.args);
+            output = await tool.execute(args, this.toolContext(agentId));
+          } catch (error) {
+            output = `error: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        }
+
+        if (conversationId) {
+          this.db.messages.create({
+            conversationId,
+            role: "tool",
+            content: output,
+            toolCalls: [{ id: call.id, name: call.name, args: call.args }],
+          });
+        }
+
+        this.db.runs.appendEvent(runId, {
+          type: "tool_result",
+          at: now(),
+          id: call.id,
+          name: call.name,
+          output,
+        });
+        yield { type: "tool_result", at: now(), id: call.id, name: call.name, output };
+
+        toolResults.push({ role: "tool", tool_call_id: call.id, content: output });
+      }
+
+      messages = [...messages, assistantMessage, ...toolResults];
+    }
+
+    throw new Error(`tool loop exceeded ${MAX_TOOL_ITERATIONS} iterations`);
+  }
+}
+
+function parseJsonArgs(raw: string): Record<string, unknown> {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
+  } catch {
+    return {};
   }
 }
