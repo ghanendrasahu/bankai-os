@@ -125,6 +125,7 @@ export function registerTasksRoutes(app: FastifyInstance): void {
       return;
     }
     const task = app.db.tasks.create(input);
+    app.scheduler.refresh();
     reply.code(201);
     return task;
   });
@@ -137,6 +138,7 @@ export function registerTasksRoutes(app: FastifyInstance): void {
       notFound(reply, `task ${request.params.id} not found`);
       return;
     }
+    app.scheduler.refresh();
     return task;
   });
 
@@ -145,6 +147,7 @@ export function registerTasksRoutes(app: FastifyInstance): void {
       notFound(reply, `task ${request.params.id} not found`);
       return;
     }
+    app.scheduler.refresh();
     reply.code(204);
     return;
   });

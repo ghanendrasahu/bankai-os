@@ -1,5 +1,7 @@
 import { loadConfig } from "@bankai/config";
 import { BankaiDb } from "@bankai/db";
+import { AgentRuntime } from "@bankai/agent";
+import { TaskScheduler } from "@bankai/tasks";
 import { buildServer } from "./app.js";
 import "./types.js";
 
@@ -12,11 +14,16 @@ async function main(): Promise<void> {
     console.log(`Marked ${interrupted} interrupted run(s) after restart`);
   }
 
-  const app = buildServer({ config, db });
+  const runtime = new AgentRuntime(db);
+  const scheduler = new TaskScheduler({ db, runtime });
+  const app = buildServer({ config, db, scheduler });
   await app.listen({ host: config.HOST, port: config.PORT });
+
+  scheduler.start();
 
   async function shutdown(signal: string): Promise<void> {
     app.log.info(`${signal} received, shutting down`);
+    scheduler.stop();
     await app.close();
     db.close();
     process.exit(0);

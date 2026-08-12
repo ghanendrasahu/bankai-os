@@ -2,6 +2,7 @@ import type { AgentRuntime } from "@bankai/agent";
 import { AgentRuntime as AgentRuntimeImpl } from "@bankai/agent";
 import type { BankaiConfig } from "@bankai/config";
 import type { BankaiDb } from "@bankai/db";
+import type { TaskScheduler } from "@bankai/tasks";
 import type { FastifyError } from "fastify";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
@@ -12,9 +13,10 @@ import type { ApiError } from "./errors.js";
 export interface BuildServerOptions {
   config: BankaiConfig;
   db: BankaiDb;
+  scheduler: TaskScheduler;
 }
 
-export function buildServer({ config, db }: BuildServerOptions) {
+export function buildServer({ config, db, scheduler }: BuildServerOptions) {
   const app = Fastify({
     logger: {
       level: config.LOG_LEVEL,
@@ -25,6 +27,7 @@ export function buildServer({ config, db }: BuildServerOptions) {
 
   app.decorate("config", config);
   app.decorate("db", db);
+  app.decorate("scheduler", scheduler);
   const runtime: AgentRuntime = new AgentRuntimeImpl(db);
   app.decorate("runtime", runtime);
   app.decorate("runAborts", new Map<string, AbortController>());
