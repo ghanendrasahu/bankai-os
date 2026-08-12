@@ -3,43 +3,61 @@
 Personal autonomous agent platform. Monorepo: `packages/*` for shared libs,
 `apps/*` for server + dashboard. DB: SQLite via `@bankai/db` (better-sqlite3, WAL).
 
+## Architecture (locked)
+- **Single process**: server serves the dashboard's static build → one Node process; SQLite stays safe (single-writer).
+- **Repository layer** (`@bankai/db`): every query behind typed repos. SQLite now, Postgres later = config swap.
+- **SSE, not WebSockets**: run streaming over Server-Sent Events — tunnel/proxy friendly, auto-reconnect, mobile-friendly.
+- **Idempotency + state machine**: runs move `queued → running → completed|failed|cancelled`; events appended as audit log; duplicate submits rejected via `request_id`.
+- **Crash-safe**: on boot, lingering `running` runs marked interrupted; WAL + busy_timeout.
+- **Zero secrets in code**: zod-validated env config in `@bankai/config`.
+
+## Git workflow
+- Every commit authored as `ghanendrasahu` (identity set in global git config).
+- Commit-per-feature: each meaningful milestone gets its own commit; pushed to `origin/main` (`github.com/ghanendrasahu/bankai-os`, private).
+
 ## Phase 1 — Foundation ✅
 - Monorepo workspaces, `tsconfig.base.json`, root scripts (build/typecheck/lint/dev)
 - `@bankai/db`: schema (settings, agents, conversations, messages, runs, tasks, memory)
 - Default model: `groq:llama-3.3-70b-versatile`
 
-## Phase 2 — Server core
-- `apps/server` (@bankai/server): Fastify + TypeScript, REST API over `@bankai/db`
-- CRUD: agents, conversations, messages, runs, tasks, memory; settings read/write
-- Health endpoint, JSON logging, structured errors
+## Phase 2 — Contracts & data layer
+- `@bankai/contracts`: shared zod DTOs, IDs, run state machine types — single source of truth for server + dashboard
+- `@bankai/config`: zod-validated env config
+- `@bankai/db`: versioned migrations runner, typed repositories (agents, conversations, messages, runs, tasks, memory, settings), backup helper (`VACUUM INTO`)
 
-## Phase 3 — Agent runtime
-- Run lifecycle: create run → stream model → persist messages/events → finish
-- Provider adapter interface; Groq implementation (OpenAI-compatible)
-- Tool calling framework + first tools (time, web-search later)
+## Phase 3 — Server core
+- `apps/server` (@bankai/server): Fastify + TypeScript
+- Health endpoint, Bearer-token auth middleware, request IDs
+- REST CRUD: agents, conversations, messages, runs, tasks, memory; settings read/write
+- Structured JSON logs (pino), validation errors, graceful shutdown
 
-## Phase 4 — Dashboard UI
-- `apps/dashboard` (@bankai/dashboard): React + Vite + TypeScript
-- Chat view (create conversation, stream messages)
-- Agent manager (create/edit/disable agents), run history viewer
+## Phase 4 — Agent runtime
+- `@bankai/agent`: OpenAI-compatible provider abstraction (Groq primary; OpenAI/LM Studio later)
+- Run state machine with audit events; idempotent creation via `request_id`
+- SSE streaming with batched token flush (backpressure); run endpoints
+- Boot recovery: interrupted runs marked failed
 
-## Phase 5 — Tasks scheduler
-- Cron scheduling (node-cron) on top of `tasks` table
-- Executes prompt via agent runtime, records `last_run_at` + runs
+## Phase 5 — Tools & memory
+- `@bankai/tools` + registry with allowlist; task/time tools first
+- Memory CRUD + SQLite FTS5 keyword retrieval (embeddings optional later behind retriever interface)
+- Context assembly: agent prompt + relevant memory + conversation history
 
-## Phase 6 — Memory & context
-- Memory CRUD endpoints; note-taking from agent output
-- Keyword/tag retrieval to inject relevant memory into prompts
+## Phase 6 — Tasks scheduler
+- In-process cron on the `tasks` table
+- Missed-run policy, crash recovery on boot, `last_run_at` tracking
+- Executes prompts through the agent runtime, persists runs
 
-## Phase 7 — Multi-provider
-- Provider abstraction: Groq, OpenAI, local (LM Studio)
-- Model selection per agent; API keys stored in `settings` (env-overridable)
+## Phase 7 — Dashboard
+- `apps/dashboard` (@bankai/dashboard): React + Vite + TypeScript, minimal deps, responsive CSS
+- Streaming chat via SSE; agent manager; run history viewer
+- Session login; mobile-responsive for remote access
 
 ## Phase 8 — Hardening & ship
-- Auth (API token), rate limiting, input validation
-- Backup/restore of the SQLite file; migrations path
-- Unit/integration tests, lint gate, docs (README, API reference)
+- Backups/restore job + documented procedure
+- Rate limiting, input hardening, secret handling via settings/env
+- Test suite (vitest per package), lint gate, perf pass
+- Packaging: single process serving UI; Tailscale remote-access guide
 
-## Cross-cutting
-- Every phase: build + typecheck + lint must pass before moving on
-- All secrets via env, never in code
+## Cross-cutting gates
+- Every phase ships only when build + typecheck + lint + tests pass.
+- Forward-only versioned migrations; no invested secret in code; tools run allowlisted only.
