@@ -16,7 +16,7 @@ async function main(): Promise<void> {
 
   const runtime = new AgentRuntime(db);
   const scheduler = new TaskScheduler({ db, runtime });
-  const app = buildServer({ config, db, scheduler });
+  const app = await buildServer({ config, db, scheduler });
   await app.listen({ host: config.HOST, port: config.PORT });
 
   scheduler.start();
