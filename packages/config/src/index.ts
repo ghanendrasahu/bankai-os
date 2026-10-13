@@ -4,12 +4,19 @@ import dotenv from "dotenv";
 import { z } from "zod";
 
 export const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   HOST: z.string().min(1).default("0.0.0.0"),
   PORT: z.coerce.number().int().min(1).max(65535).default(4173),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
   BANKAI_TOKEN: z.string().min(8).optional(),
+  // Production defaults to requiring a token; set to "false" only for a
+  // deliberately public, read-only deployment.
+  BANKAI_REQUIRE_AUTH: z.enum(["true", "false"]).optional(),
+  // Explicit browser origins for a separately hosted dashboard. Same-origin
+  // requests work without this; cross-origin is denied by default.
+  CORS_ORIGINS: z.string().optional(),
   OPENCODE_API_KEY: z.string().min(1).optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),

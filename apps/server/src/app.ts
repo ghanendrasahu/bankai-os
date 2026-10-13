@@ -5,6 +5,7 @@ import type { BankaiDb } from "@bankai/db";
 import type { TaskScheduler } from "@bankai/tasks";
 import type { FastifyError, FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import { existsSync } from "node:fs";
@@ -35,7 +36,34 @@ export async function buildServer({ config, db, scheduler }: BuildServerOptions)
   app.decorate("runtime", runtime);
   app.decorate("runAborts", new Map<string, AbortController>());
 
-  app.register(cors, { origin: true, methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"] });
+  const allowedOrigins = (config.CORS_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  // Same-origin requests need no CORS. Cross-origin is opt-in via CORS_ORIGINS.
+  app.register(cors, {
+    origin: allowedOrigins.length > 0 ? allowedOrigins : false,
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  });
+
+  await app.register(rateLimit, {
+    max: 240,
+    timeWindow: "1 minute",
+    allowList: (request) => request.url === "/health" || request.url === "/ready",
+    errorResponseBuilder: (_request, context) => ({
+      error: {
+        code: "rate_limited",
+        message: `Too many requests. Retry in ${Math.ceil(context.ttl / 1000)}s.`,
+      },
+    }),
+  });
+
+  app.addHook("onSend", async (_request, reply, payload) => {
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("X-Frame-Options", "DENY");
+    reply.header("Referrer-Policy", "no-referrer");
+    return payload;
+  });
 
   app.addContentTypeParser("application/json", { parseAs: "buffer" }, (_request, body, done) => {
     try {

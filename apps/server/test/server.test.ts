@@ -129,6 +129,65 @@ describe("bankai server", () => {
     expect(response.statusCode).toBe(200);
   });
 
+  it("masks credentials in settings responses", async () => {
+    await app.inject({
+      method: "PUT",
+      url: "/api/settings",
+      headers: { authorization: `Bearer ${TOKEN}` },
+      payload: { "groq.api_key": "gsk_super_secret", "lab.cidr": "10.0.0.0/24" },
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/settings",
+      headers: { authorization: `Bearer ${TOKEN}` },
+    });
+
+    expect(response.json()).toMatchObject({
+      "groq.api_key": "********",
+      "lab.cidr": "10.0.0.0/24",
+    });
+  });
+
+  it("does not overwrite a stored key with the mask placeholder", async () => {
+    await app.inject({
+      method: "PUT",
+      url: "/api/settings",
+      headers: { authorization: `Bearer ${TOKEN}` },
+      payload: { "groq.api_key": "gsk_super_secret" },
+    });
+    await app.inject({
+      method: "PUT",
+      url: "/api/settings",
+      headers: { authorization: `Bearer ${TOKEN}` },
+      payload: { "groq.api_key": "********" },
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/settings",
+      headers: { authorization: `Bearer ${TOKEN}` },
+    });
+    expect(response.json()["groq.api_key"]).toBe("********");
+  });
+
+  it("refuses api access in production when no token is configured", async () => {
+    const production = await buildServer({
+      config: { NODE_ENV: "production", LOG_LEVEL: "silent" } as never,
+      db: fakeDb() as never,
+      scheduler: {} as never,
+    });
+    await production.ready();
+
+    try {
+      const response = await production.inject({ method: "GET", url: "/api/settings" });
+      expect(response.statusCode).toBe(503);
+      expect(response.json().error.code).toBe("auth_not_configured");
+    } finally {
+      await production.close();
+    }
+  });
+
   it("validates the settings payload", async () => {
     const response = await app.inject({
       method: "PUT",

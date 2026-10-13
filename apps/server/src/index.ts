@@ -9,6 +9,15 @@ async function main(): Promise<void> {
   const config = loadConfig();
   const db = new BankaiDb({ dbPath: config.dbPath });
 
+  const authRequired =
+    config.BANKAI_REQUIRE_AUTH === "true" ||
+    (config.BANKAI_REQUIRE_AUTH !== "false" && config.NODE_ENV === "production");
+  if (!config.BANKAI_TOKEN && authRequired) {
+    console.warn(
+      "BANKAI_TOKEN is not set: the /api routes will answer 503 until it is configured."
+    );
+  }
+
   if (seedDefaults(db)) {
     console.log("Seeded default agent 'Bankai' with a starter chat");
   }
