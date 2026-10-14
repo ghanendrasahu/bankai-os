@@ -47,7 +47,9 @@ walking up from the working directory; existing environment variables win):
 
 | Variable | Purpose |
 |---|---|
-| `BANKAI_TOKEN` | Bearer token required on `/api/*` (open when unset) |
+| `BANKAI_TOKEN` | Bearer token required on `/api/*`. Production (`NODE_ENV=production`) refuses API access with 503 when it is unset |
+| `BANKAI_REQUIRE_AUTH` | Optional override: `true` forces auth, `false` opts into a public read-only demo (never use on a public deployment) |
+| `CORS_ORIGINS` | Comma-separated browser origins allowed to call the API cross-origin; same-origin needs nothing, everything else is denied by default |
 | `DB_PATH` | SQLite file location |
 | `HOST` / `PORT` | Bind address |
 | `GROQ_API_KEY` | Groq API key - the default provider (`groq:openai/gpt-oss-120b`); free key at console.groq.com |
@@ -65,9 +67,12 @@ walking up from the working directory; existing environment variables win):
 | `GET` | `/api/settings` | Read settings |
 | `PUT` | `/api/settings` | Write settings |
 
-Authentication is a bearer token compared against `BANKAI_TOKEN`; the hook
-runs **before** routing, so even unknown `/api/*` paths answer 401 rather
-than leaking which routes exist.
+Authentication is a bearer token compared against `BANKAI_TOKEN` in constant
+time; the hook runs **before** routing, so even unknown `/api/*` paths answer
+401 rather than leaking which routes exist. `/api/settings` masks provider
+keys, tokens and passwords (the dashboard only needs to know they exist), and
+saving the mask back never overwrites the stored secret. Rate limiting
+(240 requests/minute per client) and security headers are enabled by default.
 
 ## Packages
 
