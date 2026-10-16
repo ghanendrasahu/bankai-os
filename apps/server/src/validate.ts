@@ -2,7 +2,7 @@ import type { FastifyReply } from "fastify";
 import type { z } from "zod";
 import { badRequest } from "./errors.js";
 
-export function validate<S extends z.ZodTypeAny>(
+export function validate<S extends z.ZodType>(
   schema: S,
   data: unknown,
   reply: FastifyReply
