@@ -10,7 +10,8 @@
                     "typecheck":  "tsc -p tsconfig.json --noEmit",
                     "dev":  "tsx watch src/index.ts",
                     "start":  "node dist/index.js",
-                    "test":  "vitest run"
+                    "test":  "vitest run",
+                    "lint":  "eslint src"
                 },
     "dependencies":  {
                          "@bankai/agent":  "0.1.0",

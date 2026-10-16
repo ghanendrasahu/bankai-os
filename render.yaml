@@ -1,0 +1,21 @@
+# Render blueprint for bankai-os.
+# Mirrors the live service configuration; inert until an explicit Blueprint Sync.
+# Secret values are declared with sync:false and stay in the Render dashboard.
+services:
+- type: web
+  name: bankai-os
+  runtime: node
+  plan: free
+  region: oregon
+  branch: main
+  buildCommand: npm ci && npm run build
+  startCommand: node apps/server/dist/index.js
+  healthCheckPath: /health
+  autoDeploy: true
+  envVars:
+  - key: BANKAI_TOKEN
+    sync: false
+  - key: GROQ_API_KEY
+    sync: false
+  - key: NODE_VERSION
+    value: '20'

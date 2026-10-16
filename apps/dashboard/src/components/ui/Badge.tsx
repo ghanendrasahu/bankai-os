@@ -34,7 +34,7 @@ export function Chip({ tone = "neutral", className = "", children, ...rest }: Re
 }
 
 /** Toggle chip for multi-select groups (aria-pressed carries the state). */
-export function ChipSelect({ className = "", children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export function ChipSelect({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button type="button" className="chip chip-select" {...rest}>
       {children}

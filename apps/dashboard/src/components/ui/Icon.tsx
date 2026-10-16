@@ -99,8 +99,6 @@ const AGENT_ICON = (
   </>
 );
 
-const TASKS_ICON = PATHS.clock;
-
 export function Icon({
   name,
   className,

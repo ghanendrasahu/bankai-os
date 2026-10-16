@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Icon, type IconName } from "./Icon.js";
-import { Button } from "./Button.js";
 
 export function Spinner({ className = "" }: { className?: string }) {
   return <span className={`spinner ${className}`.trimEnd()} aria-hidden="true" />;

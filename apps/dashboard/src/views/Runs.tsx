@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Agent, Run, RunEvent } from "@bankai/contracts";
 import { api, streamRun } from "../api.js";
-import { relTime, absTime, fmtDuration, truncate } from "../lib/format.js";
-import { RUN_STATUSES, RUN_STATUS_META, toolInfo } from "../lib/domain.js";
+import { relTime, absTime, fmtDuration } from "../lib/format.js";
+import { RUN_STATUSES, RUN_STATUS_META } from "../lib/domain.js";
 import { Badge, Chip } from "../components/ui/Badge.js";
 import { Button, IconButton } from "../components/ui/Button.js";
 import { Select } from "../components/ui/Field.js";

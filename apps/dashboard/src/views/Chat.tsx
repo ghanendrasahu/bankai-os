@@ -3,7 +3,7 @@ import type { Agent, Conversation, Message, RunEvent } from "@bankai/contracts";
 import { api, streamRun } from "../api.js";
 import { relTime, absTime, initials } from "../lib/format.js";
 import { Icon } from "../components/ui/Icon.js";
-import { Button, IconButton } from "../components/ui/Button.js";
+import { IconButton } from "../components/ui/Button.js";
 import { Select, TextInput } from "../components/ui/Field.js";
 import { Alert } from "../components/ui/Alert.js";
 import { Markdown } from "../components/ui/Markdown.js";

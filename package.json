@@ -1,29 +1,31 @@
 {
-    "name":  "bankai-os",
-    "version":  "0.1.0",
-    "private":  true,
-    "description":  "Bankai OS - personal autonomous agent platform",
-    "workspaces":  [
-                       "apps/*",
-                       "packages/*"
-                   ],
-    "scripts":  {
-                    "typecheck":  "npm run typecheck --workspaces --if-present",
-                    "lint":  "npm run lint --workspaces --if-present",
-                    "dev":  "concurrently -n server,dashboard -c auto \"npm:dev:server\" \"npm:dev:dashboard\"",
-                    "dev:server":  "npm run dev --workspace=@bankai/server",
-                    "dev:dashboard":  "npm run dev --workspace=@bankai/dashboard",
-                    "start":  "npm run start --workspace=@bankai/server",
-                    "test":  "vitest run",
-                    "test:watch":  "vitest",
-                    "build:packages":  "npm run build -w @bankai/contracts \u0026\u0026 npm run build -w @bankai/config \u0026\u0026 npm run build -w @bankai/db \u0026\u0026 npm run build -w @bankai/tools \u0026\u0026 npm run build -w @bankai/agent \u0026\u0026 npm run build -w @bankai/tasks \u0026\u0026 npm run build -w @bankai/server",
-                    "build":  "npm run build:packages \u0026\u0026 npm run build -w @bankai/dashboard"
-                },
-    "devDependencies":  {
-                            "concurrently":  "^9.0.0",
-                            "vitest":  "^4.1.10"
-                        },
-    "engines":  {
-                    "node":  "\u003e=20"
-                }
+    "name": "bankai-os",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Bankai OS - personal autonomous agent platform",
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "dev": "concurrently -n server,dashboard -c auto \"npm:dev:server\" \"npm:dev:dashboard\"",
+        "dev:server": "npm run dev --workspace=@bankai/server",
+        "dev:dashboard": "npm run dev --workspace=@bankai/dashboard",
+        "start": "npm run start --workspace=@bankai/server",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "build:packages": "npm run build -w @bankai/contracts && npm run build -w @bankai/config && npm run build -w @bankai/db && npm run build -w @bankai/tools && npm run build -w @bankai/agent && npm run build -w @bankai/tasks && npm run build -w @bankai/server",
+        "build": "npm run build:packages && npm run build -w @bankai/dashboard"
+    },
+    "devDependencies": {
+        "concurrently": "^9.0.0",
+        "eslint": "^10.14.0",
+        "typescript-eslint": "^8.72.1",
+        "vitest": "^4.1.10"
+    },
+    "engines": {
+        "node": ">=20"
+    }
 }

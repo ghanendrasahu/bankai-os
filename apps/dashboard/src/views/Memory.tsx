@@ -4,7 +4,7 @@ import { api } from "../api.js";
 import { relTime } from "../lib/format.js";
 import { Button, IconButton } from "../components/ui/Button.js";
 import { Badge, Chip } from "../components/ui/Badge.js";
-import { Field, Select, TextArea, TextInput } from "../components/ui/Field.js";
+import { Field, Select, TextArea } from "../components/ui/Field.js";
 import { EmptyState, Skeleton } from "../components/ui/Loading.js";
 import { Alert } from "../components/ui/Alert.js";
 import { Icon } from "../components/ui/Icon.js";

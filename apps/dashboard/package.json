@@ -6,7 +6,8 @@
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "dev": "vite"
+    "dev": "vite",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@bankai/contracts": "0.1.0",
