@@ -1,52 +1,88 @@
 # Bankai OS
 
-Personal autonomous agent platform. A TypeScript monorepo with a Fastify server, React dashboard, and SQLite storage.
+A local-first agent operating system for a personal AI stack: a Fastify API
+that serves agents, runs and streams their work, and persists everything in
+SQLite — with a React dashboard on top.
+
+The API is the product surface; the packages underneath it (agents, tasks,
+tools, database, config) are independently usable.
 
 ## Architecture
 
-- **Single process** â€” server serves the dashboard's static build + one Node process
-- **SQLite** via `@bankai/db` (better-sqlite3, WAL mode)
-- **SSE streaming** for real-time agent communication
-- **Monorepo** â€” `apps/*` for server and dashboard, `packages/*` for shared libraries
+```mermaid
+flowchart LR
+  UI[React dashboard] --> API[Fastify API]
+  API --> AG[Agent runtime]
+  API --> TK[Task scheduler]
+  API --> DB[(SQLite - better-sqlite3)]
+  AG --> TL[Tools + providers]
+  TK --> DB
+```
 
-## Packages
+- **Agent runtime** — plans, streams and stores agent runs and their events.
+- **Task scheduler** — queues background work, survives restarts (runs that
+  were in flight are marked `interrupted` on boot, not lost).
+- **SQLite storage** — WAL mode, migrations applied on start, repositories
+  for agents, conversations, messages, runs, tasks, memory and settings.
+- **Migrations** — versioned and applied automatically, no `db:push`.
 
-| Package | Description |
-|---------|-------------|
-| `@bankai/db` | SQLite schema, migrations, typed repositories |
-| `@bankai/contracts` | Shared Zod DTOs and types |
-| `@bankai/config` | Zod-validated environment config |
-| `@bankai/agent` | OpenAI-compatible provider abstraction (Groq primary) |
-| `@bankai/tools` | Tool registry with allowlist |
-| `@bankai/server` | Fastify REST API + SSE streaming |
-| `@bankai/dashboard` | React + Vite + TypeScript dashboard |
-
-## Getting Started
+## Quick start
 
 ```bash
 npm install
-npm run build
-npm run dev
+npm run build:packages     # workspace packages publish dist/ entry points
+npm run dev:server         # Fastify API on :8080
+npm run dev:dashboard      # Vite dashboard on :5173
 ```
 
-This starts both the server and dashboard concurrently.
+Environment (`.env`):
 
-## Scripts
+| Variable | Purpose |
+|---|---|
+| `BANKAI_TOKEN` | Bearer token required on `/api/*` (open when unset) |
+| `BANKAI_DB_PATH` | SQLite file location |
+| `BANKAI_HOST` / `BANKAI_PORT` | Bind address |
 
-| Command | Description |
-|---------|-------------|
-| `npm run build` | Build all packages |
-| `npm run typecheck` | Type-check all packages |
-| `npm run lint` | Lint all packages |
-| `npm run dev` | Start server + dashboard in parallel |
-| `npm start` | Start server in production mode |
+## API
 
-## Default Model
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/health` | Liveness (no auth) |
+| `GET` | `/ready` | Readiness - pings the database, 503 when it is down |
+| `GET` | `/api/agents` | List agents |
+| `POST` | `/api/agents` | Create an agent |
+| `GET` | `/api/conversations` | List conversations |
+| `GET` | `/api/settings` | Read settings |
+| `PUT` | `/api/settings` | Write settings |
 
-`groq:llama-3.3-70b-versatile`
+Authentication is a bearer token compared against `BANKAI_TOKEN`; the hook
+runs **before** routing, so even unknown `/api/*` paths answer 401 rather
+than leaking which routes exist.
 
-## License
+## Packages
 
-MIT (c) 2026 ghanendrasahu - see [LICENSE](LICENSE).
+| Package | What it owns |
+|---|---|
+| `@bankai/contracts` | Zod schemas shared by every package |
+| `@bankai/config` | Typed, validated environment configuration |
+| `@bankai/db` | SQLite client, migrations and repositories |
+| `@bankai/tools` | Tool definitions and execution |
+| `@bankai/agent` | The agent runtime |
+| `@bankai/tasks` | Scheduler and worker loop |
 
-Issues and pull requests are welcome.
+## Testing
+
+```bash
+npm test          # vitest: API route integration, SQLite repositories, contract schemas
+npm run lint
+npm run typecheck
+```
+
+The suites are offline and deterministic: the API tests drive the real
+Fastify instance with `app.inject()`, and the repository tests run against a
+real in-memory SQLite database.
+
+## CI
+
+`npm ci` → build workspace packages (in dependency order) → lint, typecheck
+and test, plus a dashboard bundle build. Every push runs all of it.
