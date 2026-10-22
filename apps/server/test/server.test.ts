@@ -6,9 +6,10 @@ import { buildServer } from "../src/app.js";
 const TOKEN = "test-token";
 
 /** Minimal in-memory stand-in for the persistence layer. */
-function fakeDb() {
+function fakeDb(databaseUp = true) {
   const settings = new Map<string, string>();
   return {
+    ping: () => databaseUp,
     settings: {
       all: () => Object.fromEntries(settings),
       setMany: (entries: Record<string, string>) => {
@@ -59,6 +60,37 @@ describe("bankai server", () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({ status: "ok" });
+  });
+
+  it("reports readiness when the database answers", async () => {
+    const response = await app.inject({ method: "GET", url: "/ready" });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      status: "ready",
+      checks: { database: "up" },
+    });
+  });
+
+  it("reports 503 when the database is down", async () => {
+    const degraded = await buildServer({
+      config: { BANKAI_TOKEN: TOKEN, LOG_LEVEL: "silent" } as never,
+      db: fakeDb(false) as never,
+      scheduler: {} as never,
+    });
+    await degraded.ready();
+
+    try {
+      const response = await degraded.inject({ method: "GET", url: "/ready" });
+
+      expect(response.statusCode).toBe(503);
+      expect(response.json()).toMatchObject({
+        status: "unavailable",
+        checks: { database: "down" },
+      });
+    } finally {
+      await degraded.close();
+    }
   });
 
   it("rejects api calls without a bearer token", async () => {

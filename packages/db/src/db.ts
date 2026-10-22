@@ -53,6 +53,16 @@ export class BankaiDb {
     return this.db;
   }
 
+  /** Cheap liveness probe used by the readiness endpoint. */
+  ping(): boolean {
+    try {
+      this.db.prepare("SELECT 1").get();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   close(): void {
     this.db.close();
   }

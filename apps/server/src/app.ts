@@ -61,6 +61,16 @@ export async function buildServer({ config, db, scheduler }: BuildServerOptions)
     return { status: "ok", uptime: process.uptime() };
   });
 
+  app.get("/ready", async (_request, reply) => {
+    // Readiness = the process is up *and* its dependencies answer.
+    const database = app.db.ping();
+    const ready = database;
+    return reply.code(ready ? 200 : 503).send({
+      status: ready ? "ready" : "unavailable",
+      checks: { database: database ? "up" : "down" },
+    });
+  });
+
   app.register(
     async (scoped) => {
       registerRoutes(scoped);
