@@ -7,7 +7,17 @@ FROM node:20-slim AS build
 ENV NODE_ENV=development
 WORKDIR /app
 
+# Every workspace manifest must exist before npm ci so the install covers
+# the whole lockfile graph, not just the root package.
 COPY package.json package-lock.json ./
+COPY packages/config/package.json ./packages/config/
+COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/agent/package.json ./packages/agent/
+COPY packages/tasks/package.json ./packages/tasks/
+COPY packages/tools/package.json ./packages/tools/
+COPY packages/db/package.json ./packages/db/
+COPY apps/server/package.json ./apps/server/
+COPY apps/dashboard/package.json ./apps/dashboard/
 RUN npm ci
 
 COPY tsconfig.base.json vitest.config.ts ./
