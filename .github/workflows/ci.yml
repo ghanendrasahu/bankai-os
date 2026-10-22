@@ -25,16 +25,24 @@ jobs:
 
       - run: npm ci
 
-      # The workspace packages publish `dist/` entry points, so they must be
-      # built before typechecking or testing can resolve them.
+      # The workspace packages publish `dist/` entry points and depend on each
+      # other, so they are built in dependency order before anything resolves
+      # them.
       - name: Build workspace packages
-        run: npm run build
+        run: npm run build:packages
 
       - name: Lint
         run: npm run lint
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Build dashboard
+        run: npm run build -w @bankai/dashboard
+        env:
+          NEXT_PUBLIC_APP_URL: http://localhost:5173
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
 
   test:
     name: Test
@@ -51,7 +59,7 @@ jobs:
       - run: npm ci
 
       - name: Build workspace packages
-        run: npm run build
+        run: npm run build:packages
 
       - name: Vitest
         run: npm test

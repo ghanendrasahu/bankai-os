@@ -8,7 +8,6 @@
                        "packages/*"
                    ],
     "scripts":  {
-                    "build":  "npm run build --workspaces --if-present",
                     "typecheck":  "npm run typecheck --workspaces --if-present",
                     "lint":  "npm run lint --workspaces --if-present",
                     "dev":  "concurrently -n server,dashboard -c auto \"npm:dev:server\" \"npm:dev:dashboard\"",
@@ -16,7 +15,9 @@
                     "dev:dashboard":  "npm run dev --workspace=@bankai/dashboard",
                     "start":  "npm run start --workspace=@bankai/server",
                     "test":  "vitest run",
-                    "test:watch":  "vitest"
+                    "test:watch":  "vitest",
+                    "build:packages":  "npm run build -w @bankai/contracts \u0026\u0026 npm run build -w @bankai/config \u0026\u0026 npm run build -w @bankai/db \u0026\u0026 npm run build -w @bankai/tools \u0026\u0026 npm run build -w @bankai/agent \u0026\u0026 npm run build -w @bankai/tasks \u0026\u0026 npm run build -w @bankai/server",
+                    "build":  "npm run build:packages \u0026\u0026 npm run build -w @bankai/dashboard"
                 },
     "devDependencies":  {
                             "concurrently":  "^9.0.0",
