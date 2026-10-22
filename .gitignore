@@ -28,3 +28,6 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Local server state (SQLite database and WAL files)
+apps/server/storage/
