@@ -4,10 +4,10 @@ Personal autonomous agent platform. A TypeScript monorepo with a Fastify server,
 
 ## Architecture
 
-- **Single process** — server serves the dashboard's static build + one Node process
+- **Single process** â€” server serves the dashboard's static build + one Node process
 - **SQLite** via `@bankai/db` (better-sqlite3, WAL mode)
 - **SSE streaming** for real-time agent communication
-- **Monorepo** — `apps/*` for server and dashboard, `packages/*` for shared libraries
+- **Monorepo** â€” `apps/*` for server and dashboard, `packages/*` for shared libraries
 
 ## Packages
 
@@ -44,3 +44,9 @@ This starts both the server and dashboard concurrently.
 ## Default Model
 
 `groq:llama-3.3-70b-versatile`
+
+## License
+
+MIT (c) 2026 ghanendrasahu - see [LICENSE](LICENSE).
+
+Issues and pull requests are welcome.
