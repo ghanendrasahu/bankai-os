@@ -25,6 +25,11 @@ jobs:
 
       - run: npm ci
 
+      # The workspace packages publish `dist/` entry points, so they must be
+      # built before typechecking or testing can resolve them.
+      - name: Build workspace packages
+        run: npm run build
+
       - name: Lint
         run: npm run lint
 
@@ -44,6 +49,9 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Build workspace packages
+        run: npm run build
 
       - name: Vitest
         run: npm test
