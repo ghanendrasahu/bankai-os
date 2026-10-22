@@ -1,3 +1,4 @@
+import path from "node:path";
 import { z } from "zod";
 
 export const envSchema = z.object({
@@ -25,6 +26,7 @@ export function loadConfig(
 ): BankaiConfig {
   const parsed = envSchema.parse(env);
   const storageRoot = parsed.STORAGE_ROOT ?? process.cwd();
-  const dbPath = parsed.DB_PATH ?? `${storageRoot}\\storage\\db\\bankai.db`;
+  // Use the host platform's separator so defaults work on Windows and Linux.
+  const dbPath = parsed.DB_PATH ?? path.join(storageRoot, "storage", "db", "bankai.db");
   return { ...parsed, storageRoot, dbPath };
 }
