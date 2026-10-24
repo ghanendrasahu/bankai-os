@@ -88,7 +88,10 @@ async function registerStaticSpa(app: FastifyInstance): Promise<void> {
   const hasStatic = existsSync(distDir);
 
   if (hasStatic) {
-    await app.register(fastifyStatic, { root: distDir, wildcard: false, index: ["index.html"] });
+    // default wildcard mode: serves every existing file under dist with the
+    // correct content-type (the old `wildcard: false` served only "/" and
+    // answered asset requests, like the JS bundle, with index.html)
+    await app.register(fastifyStatic, { root: distDir, index: ["index.html"] });
   }
 
   app.setNotFoundHandler((request, reply) => {
