@@ -31,3 +31,20 @@ Optional: `LAB_WORKSPACE` overrides the report/output root
 | Agent allowlists | Each agent only receives the tools listed for it |
 
 The `Recon` agent is seeded at boot with the full lab toolkit.
+
+## Android lab devices (phones/tablets)
+
+Owned Android devices on the LAN count as lab targets (they sit inside the
+declared scope or resolve to it). The Android Debug Bridge is installed and on
+`PATH` for `run_command`:
+
+```
+adb devices            # connected phones (USB debugging must be on, and the
+adb shell pm list pkg  #   phone's on-screen Allow prompt accepted once)
+adb shell screencap    # installed packages, screenshots, logcat, etc.
+```
+
+The one-time unlock lives on the phone itself: Settings > About phone > tap
+Build number 7x, then Developer options > USB debugging. Phones also
+randomize their Wi-Fi MAC, so re-scan (`nmap -sn <lab-cidr>`) after every
+reconnect.

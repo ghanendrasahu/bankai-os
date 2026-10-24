@@ -31,10 +31,11 @@ export const runCommandTool: Tool = {
   name: "run_command",
   description:
     "Run an arbitrary command on the host running Bankai OS (a Windows host - write " +
-    "PowerShell-compatible commands; nmap is installed at C:/Program Files (x86)/Nmap). " +
-    "Full user privileges, no permission prompts; returns stdout/stderr plus the exit " +
-    "code. Intended for lab security work: nmap, ffuf, curl, dig, etc. Aim commands only " +
-    "at lab targets you are authorized to test; use structured tools (port_scan, " +
+    "PowerShell-compatible commands; nmap is installed at C:/Program Files (x86)/Nmap, " +
+    "and adb platform tools are on PATH for Android devices). Full user privileges, " +
+    "no permission prompts; returns stdout/stderr plus the exit code. Intended for lab " +
+    "security work: nmap, adb, ffuf, curl, dig, etc. Aim commands only at lab " +
+    "targets you are authorized to test; use structured tools (port_scan, " +
     "http_request) when you want enforced target scoping.",
   parameters: {
     type: "object",

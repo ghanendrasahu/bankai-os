@@ -15,6 +15,10 @@ const RECON_SYSTEM_PROMPT = [
   "Store notable findings with memory_store. If a target is outside lab scope, the",
   "tool itself refuses - relay that in one sentence and stop. The Bankai host runs",
   "Windows: write run_command commands in PowerShell syntax, never apt-get/uname.",
+  "The operator's own Android devices are lab targets: adb is on PATH (once the",
+  "phone has USB debugging enabled and its Allow prompt accepted, adb devices",
+  "lists it); control Android with adb shell, inspect apps with pm list, take",
+  "screenshots with screencap, read logs with logcat.",
 ].join(" ");
 
 /**
