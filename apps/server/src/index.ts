@@ -1,5 +1,5 @@
 import { loadConfig } from "@bankai/config";
-import { BankaiDb, seedDefaults } from "@bankai/db";
+import { BankaiDb, seedDefaults, seedSecurityAgent } from "@bankai/db";
 import { AgentRuntime } from "@bankai/agent";
 import { TaskScheduler } from "@bankai/tasks";
 import { buildServer } from "./app.js";
@@ -11,6 +11,9 @@ async function main(): Promise<void> {
 
   if (seedDefaults(db)) {
     console.log("Seeded default agent 'Bankai' with a starter chat");
+  }
+  if (seedSecurityAgent(db)) {
+    console.log("Seeded lab security agent 'Recon' (configure lab.cidr or LAB_CIDR to unlock scans)");
   }
 
   const interrupted = db.recoverInterruptedRuns();

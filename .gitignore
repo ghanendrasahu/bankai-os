@@ -31,3 +31,6 @@ Thumbs.db
 
 # Local server state (SQLite database and WAL files)
 apps/server/storage/
+
+# Lab workspace (security harness outputs/reports)
+security/

@@ -84,6 +84,13 @@ npm run lint
 npm run typecheck
 ```
 
+## Security lab mode
+
+For pentesting your own lab machines, a seeded **Recon** agent ships with the
+`run_command`, `port_scan`, `http_request` and `report_write` tools. Declare your
+lab ranges once via `LAB_CIDR` (or the `lab.cidr` setting) and the structured
+tools enforce that scope automatically - see [SECURITY.md](SECURITY.md).
+
 The suites are offline and deterministic: the API tests drive the real
 Fastify instance with `app.inject()`, and the repository tests run against a
 real in-memory SQLite database.
