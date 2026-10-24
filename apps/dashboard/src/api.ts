@@ -53,13 +53,15 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  put: <T>(path: string, body: unknown) => request<T>("PUT", path, body),
   patch: <T>(path: string, body: unknown) => request<T>("PATCH", path, body),
   del: <T>(path: string) => request<T>("DELETE", path),
 };
 
 export async function streamRun(
   runId: string,
-  onEvent: (event: RunEvent) => void
+  onEvent: (event: RunEvent) => void,
+  signal?: AbortSignal
 ): Promise<void> {
   const headers: Record<string, string> = {};
   const token = getToken();
@@ -69,6 +71,7 @@ export async function streamRun(
   const response = await fetch(`${API_BASE}${API_PREFIX}/runs/${runId}/stream`, {
     method: "POST",
     headers,
+    signal,
   });
   if (!response.ok) {
     const data = await response.json().catch(() => null);
