@@ -1,5 +1,5 @@
 import { loadConfig } from "@bankai/config";
-import { BankaiDb } from "@bankai/db";
+import { BankaiDb, seedDefaults } from "@bankai/db";
 import { AgentRuntime } from "@bankai/agent";
 import { TaskScheduler } from "@bankai/tasks";
 import { buildServer } from "./app.js";
@@ -8,6 +8,10 @@ import "./types.js";
 async function main(): Promise<void> {
   const config = loadConfig();
   const db = new BankaiDb({ dbPath: config.dbPath });
+
+  if (seedDefaults(db)) {
+    console.log("Seeded default agent 'Bankai' with a starter chat");
+  }
 
   const interrupted = db.recoverInterruptedRuns();
   if (interrupted > 0) {

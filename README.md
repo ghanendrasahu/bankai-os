@@ -20,6 +20,9 @@ flowchart LR
 ```
 
 - **Agent runtime** — plans, streams and stores agent runs and their events.
+- **Zero-config first run** — a fresh database is seeded with a default agent
+  (`Bankai`, `groq:openai/gpt-oss-120b`, time + memory tools) and a starter
+  chat, so the dashboard is usable immediately. Existing databases are untouched.
 - **Task scheduler** — queues background work, survives restarts (runs that
   were in flight are marked `interrupted` on boot, not lost).
 - **SQLite storage** — WAL mode, migrations applied on start, repositories
@@ -35,7 +38,8 @@ npm run dev:server         # Fastify API on :8080
 npm run dev:dashboard      # Vite dashboard on :5173
 ```
 
-Environment (`.env`):
+Environment (`.env`, loaded automatically from the repo root — with `dotenv`,
+walking up from the working directory; existing environment variables win):
 
 | Variable | Purpose |
 |---|---|

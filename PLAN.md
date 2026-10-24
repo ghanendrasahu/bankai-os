@@ -10,6 +10,7 @@ Personal autonomous agent platform. Monorepo: `packages/*` for shared libs,
 - **Idempotency + state machine**: runs move `queued → running → completed|failed|cancelled`; events appended as audit log; duplicate submits rejected via `request_id`.
 - **Crash-safe**: on boot, lingering `running` runs marked interrupted; WAL + busy_timeout.
 - **Zero secrets in code**: zod-validated env config in `@bankai/config`.
+- **Zero-config first run**: a fresh DB is seeded with a default agent + starter chat; existing DBs are left untouched.
 
 ## Git workflow
 - Every commit authored as `ghanendrasahu` (identity set in global git config).

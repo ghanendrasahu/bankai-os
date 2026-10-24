@@ -29,6 +29,18 @@ export function Chat() {
   const [stream, setStream] = useState<StreamState | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const conversationPromises = useRef(new Map<string, Promise<Conversation>>());
+
+  /** Get-or-create the first chat for an agent so it is ready to use (shared promise keeps StrictMode remounts from duplicating it). */
+  function ensureConversation(agentId: string): Promise<Conversation> {
+    const pending = conversationPromises.current.get(agentId);
+    if (pending) return pending;
+    const created = api
+      .post<Conversation>("/conversations", { agentId, title: "New chat" })
+      .finally(() => conversationPromises.current.delete(agentId));
+    conversationPromises.current.set(agentId, created);
+    return created;
+  }
 
   const loadAgents = useCallback(async () => {
     try {
@@ -51,15 +63,27 @@ export function Chat() {
       setMessages([]);
       return;
     }
+    let cancelled = false;
     void (async () => {
       try {
-        const list = await api.get<Conversation[]>(`/conversations?agentId=${encodeURIComponent(agentId)}`);
+        let list = await api.get<Conversation[]>(`/conversations?agentId=${encodeURIComponent(agentId)}`);
+        // An agent with no chats gets one automatically - straight to the composer.
+        if (list.length === 0) {
+          const created = await ensureConversation(agentId);
+          if (cancelled) return;
+          list = [created, ...list];
+        }
+        if (cancelled) return;
         setConversations(list);
         setConversationId((prev) => (list.some((c) => c.id === prev) ? prev : (list[0]?.id ?? "")));
       } catch (e) {
+        if (cancelled) return;
         setError((e as Error).message);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [agentId]);
 
   useEffect(() => {

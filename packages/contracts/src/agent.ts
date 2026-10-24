@@ -2,6 +2,14 @@ import { z } from "zod";
 
 export const DEFAULT_MODEL = "groq:openai/gpt-oss-120b";
 
+/** Default tool allowlist for the auto-seeded agent (names from @bankai/tools registry). */
+export const DEFAULT_AGENT_TOOLS: string[] = [
+  "time",
+  "memory_store",
+  "memory_search",
+  "memory_list",
+];
+
 export const agentInputSchema = z.object({
   name: z.string().min(1).max(120),
   description: z.string().max(1000).default(""),

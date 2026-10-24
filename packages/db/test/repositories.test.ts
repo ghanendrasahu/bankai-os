@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { DEFAULT_MODEL } from "@bankai/contracts";
 
 import { BankaiDb } from "../src/db.js";
+import { seedDefaults } from "../src/seed.js";
 
 /**
  * Real repository tests against an in-memory SQLite database - the same code
@@ -95,5 +97,36 @@ describe("bankai db repositories", () => {
 
     expect(db.conversations.list(agent.id)).toHaveLength(1);
     expect(db.conversations.list("other-agent")).toHaveLength(0);
+  });
+
+  it("seeds a ready-to-use default agent and starter chat on an empty database", () => {
+    expect(seedDefaults(db)).toBe(true);
+
+    const agents = db.agents.list();
+    expect(agents).toHaveLength(1);
+    expect(agents[0]?.name).toBe("Bankai");
+    expect(agents[0]?.model).toBe(DEFAULT_MODEL);
+    expect(agents[0]?.enabled).toBe(true);
+    expect(agents[0]?.tools).toContain("time");
+
+    const conversations = db.conversations.list();
+    expect(conversations).toHaveLength(1);
+    expect(conversations[0]?.agentId).toBe(agents[0]?.id);
+    expect(conversations[0]?.title).toBe("New chat");
+  });
+
+  it("leaves an existing database untouched when seeding", () => {
+    db.agents.create({
+      name: "Mine",
+      description: "",
+      systemPrompt: "",
+      model: "custom-model",
+      tools: [],
+      enabled: true,
+    });
+
+    expect(seedDefaults(db)).toBe(false);
+    expect(db.agents.list().map((agent) => agent.name)).toEqual(["Mine"]);
+    expect(db.conversations.list()).toHaveLength(0);
   });
 });
