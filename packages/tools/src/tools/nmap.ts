@@ -16,16 +16,16 @@ export const portScanTool: Tool = {
         description: "IP, CIDR or lab hostname to scan (must be inside lab scope).",
       },
       ports: {
-        type: "string",
-        description: 'Optional nmap -p expression, e.g. "1-65535" or "22,80,443".',
+        type: ["string", "null"],
+        description: 'Optional nmap -p expression, e.g. "1-65535" or "22,80,443". Omit this field entirely rather than passing null.',
       },
       extraArgs: {
-        type: "string",
-        description: 'Additional nmap flags, e.g. "-sV -O --script vuln -T4".',
+        type: ["string", "null"],
+        description: 'Additional nmap flags, e.g. "-sV -O --script vuln -T4". Omit this field entirely rather than passing null.',
       },
       timeoutMs: {
-        type: "number",
-        description: "Timeout in milliseconds (default 600000, max 1800000).",
+        type: ["number", "null"],
+        description: "Timeout in milliseconds (default 600000, max 1800000). Omit this field entirely rather than passing null.",
       },
     },
     required: ["target"],

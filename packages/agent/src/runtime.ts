@@ -161,6 +161,12 @@ export class AgentRuntime {
       const relevantMemories = this.db.memory.search(agent.id, run.prompt, 5);
       const systemPrompt = buildSystemPrompt(agent.systemPrompt, relevantMemories);
       const messages = buildChatMessages({ systemPrompt }, history);
+      // Standalone runs (no conversation) must still carry the operator's
+      // prompt to the model - otherwise the model sees only the system prompt
+      // and politely asks what to do instead of acting.
+      if (!run.conversationId) {
+        messages.push({ role: "user", content: run.prompt });
+      }
       const apiTools = apiToolsFor(agent.tools, this.registry);
 
       for await (const event of this.executeConversation({

@@ -17,15 +17,21 @@ export const httpRequestTool: Tool = {
         type: "string",
         description: "Full URL, e.g. http://192.168.1.50/dvwa/login.php",
       },
-      method: { type: "string", description: "HTTP method (default GET)." },
-      headers: {
-        type: "object",
-        description: "Request headers as key/value strings, e.g. { Cookie: 'PHPSESSID=...' }.",
+      method: {
+        type: ["string", "null"],
+        description: "HTTP method (default GET). Omit this field entirely rather than passing null.",
       },
-      body: { type: "string", description: "Request body for POST/PUT/PATCH." },
+      headers: {
+        type: ["object", "null"],
+        description: "Request headers as key/value strings, e.g. { Cookie: 'PHPSESSID=...' }. Omit this field entirely rather than passing null.",
+      },
+      body: {
+        type: ["string", "null"],
+        description: "Request body for POST/PUT/PATCH. Omit this field entirely rather than passing null.",
+      },
       timeoutMs: {
-        type: "number",
-        description: "Timeout in milliseconds (default 30000, max 600000).",
+        type: ["number", "null"],
+        description: "Timeout in milliseconds (default 30000, max 600000). Omit this field entirely rather than passing null.",
       },
     },
     required: ["url"],

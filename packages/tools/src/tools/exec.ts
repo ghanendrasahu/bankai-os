@@ -30,11 +30,12 @@ function capTail(text: string): string {
 export const runCommandTool: Tool = {
   name: "run_command",
   description:
-    "Run an arbitrary command on the host running Bankai OS (full user privileges, " +
-    "no permission prompts) and return stdout/stderr plus the exit code. Intended for " +
-    "lab security work: nmap, ffuf, curl, dig, etc. Aim commands only at lab targets " +
-    "you are authorized to test; use structured tools (port_scan, http_request) when " +
-    "you want enforced target scoping.",
+    "Run an arbitrary command on the host running Bankai OS (a Windows host - write " +
+    "PowerShell-compatible commands; nmap is installed at C:/Program Files (x86)/Nmap). " +
+    "Full user privileges, no permission prompts; returns stdout/stderr plus the exit " +
+    "code. Intended for lab security work: nmap, ffuf, curl, dig, etc. Aim commands only " +
+    "at lab targets you are authorized to test; use structured tools (port_scan, " +
+    "http_request) when you want enforced target scoping.",
   parameters: {
     type: "object",
     properties: {
@@ -44,8 +45,8 @@ export const runCommandTool: Tool = {
         description: `Timeout in milliseconds (default ${DEFAULT_TIMEOUT_MS}, max ${MAX_TIMEOUT_MS}). Long scans are safe to let run.`,
       },
       cwd: {
-        type: "string",
-        description: "Working directory; relative paths resolve inside this agent's lab workspace.",
+        type: ["string", "null"],
+        description: "Working directory; relative paths resolve inside this agent's lab workspace. Omit this field entirely rather than passing null.",
       },
     },
     required: ["command"],
