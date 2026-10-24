@@ -8,6 +8,7 @@ export const envSchema = z.object({
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
   BANKAI_TOKEN: z.string().min(8).optional(),
+  OPENCODE_API_KEY: z.string().min(1).optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
   STORAGE_ROOT: z.string().min(1).optional(),

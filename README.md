@@ -40,8 +40,10 @@ Environment (`.env`):
 | Variable | Purpose |
 |---|---|
 | `BANKAI_TOKEN` | Bearer token required on `/api/*` (open when unset) |
-| `BANKAI_DB_PATH` | SQLite file location |
-| `BANKAI_HOST` / `BANKAI_PORT` | Bind address |
+| `DB_PATH` | SQLite file location |
+| `HOST` / `PORT` | Bind address |
+| `OPENCODE_API_KEY` | OpenCode (Zen) API key - the default provider. Note: OpenCode's `*-free` models only work inside the OpenCode client; API-key clients (like this project) can use the paid models |
+| `GROQ_API_KEY` / `OPENAI_API_KEY` | Optional Groq / OpenAI keys |
 
 ## API
 
