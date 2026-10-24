@@ -6,7 +6,7 @@ const EMPTY_FORM = {
   name: "",
   description: "",
   systemPrompt: "",
-  model: "opencode:glm-5.3-flash",
+  model: "groq:llama-3.3-70b-versatile",
   tools: "",
   enabled: true,
 };

@@ -18,7 +18,7 @@ Personal autonomous agent platform. Monorepo: `packages/*` for shared libs,
 ## Phase 1 — Foundation ✅
 - Monorepo workspaces, `tsconfig.base.json`, root scripts (build/typecheck/lint/dev)
 - `@bankai/db`: schema (settings, agents, conversations, messages, runs, tasks, memory)
-- Default model: `opencode:glm-5.3-flash` (OpenCode Zen; the `*-free` models are gated to OpenCode's own client and cannot be called with an API key)
+- Default model: `groq:llama-3.3-70b-versatile` (Groq free tier; `opencode:glm-5.3-flash` is the paid alternative - OpenCode's `*-free` models are gated to the OpenCode client)
 
 ## Phase 2 — Contracts & data layer
 - `@bankai/contracts`: shared zod DTOs, IDs, run state machine types — single source of truth for server + dashboard

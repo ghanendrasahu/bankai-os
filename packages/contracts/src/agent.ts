@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const DEFAULT_MODEL = "opencode:glm-5.3-flash";
+export const DEFAULT_MODEL = "groq:llama-3.3-70b-versatile";
 
 export const agentInputSchema = z.object({
   name: z.string().min(1).max(120),

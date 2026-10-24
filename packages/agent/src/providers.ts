@@ -12,7 +12,7 @@ export const PROVIDER_BASE_URLS: Record<string, ProviderInfo> = {
   lmstudio: { baseURL: "http://127.0.0.1:1234/v1", requiresKey: false },
 };
 
-const DEFAULT_PROVIDER_INFO: ProviderInfo = PROVIDER_BASE_URLS.opencode as ProviderInfo;
+const DEFAULT_PROVIDER_INFO: ProviderInfo = PROVIDER_BASE_URLS.groq as ProviderInfo;
 
 export function createClient(provider: string, apiKey: string | undefined): OpenAI {
   const info = PROVIDER_BASE_URLS[provider] ?? DEFAULT_PROVIDER_INFO;

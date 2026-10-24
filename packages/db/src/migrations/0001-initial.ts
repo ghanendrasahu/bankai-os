@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS agents (
   name          TEXT NOT NULL,
   description   TEXT NOT NULL DEFAULT '',
   system_prompt TEXT NOT NULL DEFAULT '',
-  model         TEXT NOT NULL DEFAULT 'opencode:glm-5.3-flash',
+  model         TEXT NOT NULL DEFAULT 'groq:llama-3.3-70b-versatile',
   tools         TEXT NOT NULL DEFAULT '[]',
   enabled       INTEGER NOT NULL DEFAULT 1,
   created_at    TEXT NOT NULL,
