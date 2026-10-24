@@ -141,13 +141,29 @@ export async function assertTarget(
   const cidrs = resolveLabCidrs(ctx);
   if (cidrs.length === 0) return unconfiguredScope();
 
-  const kind = isIP(target.replace(/^\[|\]$/g, ""));
+  const bare = target.replace(/^\[|\]$/g, "");
+  const kind = isIP(bare);
   if (kind === 4) {
     return cidrs.some((cidr) => inCidr(target, cidr))
       ? { ok: true, reason: "within lab cidr" }
       : outOfScope(target);
   }
   if (kind === 6) return outOfScope(target, "IPv6 targets are not part of the lab scope");
+
+  // CIDR ranges ("10.0.0.0/24") pass through as targets too: they are valid
+  // when every address in the requested block lies inside an allowed block.
+  const asCidr = parseCidr(bare);
+  if (asCidr) {
+    const tMask = asCidr.prefix === 0 ? 0 : (0xffffffff << (32 - asCidr.prefix)) >>> 0;
+    const tBroadcast = (asCidr.base | ~tMask) >>> 0;
+    return cidrs.some((cidr) => {
+      const aMask = cidr.prefix === 0 ? 0 : (0xffffffff << (32 - cidr.prefix)) >>> 0;
+      const aBroadcast = (cidr.base | ~aMask) >>> 0;
+      return asCidr.base >= cidr.base && tBroadcast <= aBroadcast;
+    })
+      ? { ok: true, reason: "cidr within lab scope" }
+      : outOfScope(target);
+  }
 
   const addresses = await resolveHostname(target);
   if (addresses.length === 0) {

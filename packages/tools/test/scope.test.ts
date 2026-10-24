@@ -42,6 +42,20 @@ describe("lab scope", () => {
     expect(outside.reason).toContain("outside the configured lab scope");
   });
 
+  it("allows cidr targets fully inside the lab scope and rejects partial overlaps", async () => {
+    db.settings.setMany({ "lab.cidr": "10.0.0.0/8" });
+
+    const inside = await assertTarget({ db }, "10.172.99.0/24");
+    expect(inside.ok).toBe(true);
+
+    const otherNetwork = await assertTarget({ db }, "192.168.1.0/24");
+    expect(otherNetwork.ok).toBe(false);
+
+    // A block bigger than the declared lab leaks outside it - refuse.
+    const leaky = await assertTarget({ db }, "10.0.0.0/7");
+    expect(leaky.ok).toBe(false);
+  });
+
   it("allows *.lab hostnames without dns", async () => {
     const labHost = await assertTarget({ db }, "kali.lab");
     expect(labHost.ok).toBe(true);
