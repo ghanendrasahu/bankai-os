@@ -31,12 +31,16 @@ export const runCommandTool: Tool = {
   name: "run_command",
   description:
     "Run an arbitrary command on the host running Bankai OS (a Windows host - write " +
-    "PowerShell-compatible commands; nmap is installed at C:/Program Files (x86)/Nmap, " +
-    "and adb platform tools are on PATH for Android devices). Full user privileges, " +
-    "no permission prompts; returns stdout/stderr plus the exit code. Intended for lab " +
-    "security work: nmap, adb, ffuf, curl, dig, etc. Aim commands only at lab " +
-    "targets you are authorized to test; use structured tools (port_scan, " +
-    "http_request) when you want enforced target scoping.",
+    "PowerShell-compatible commands; nmap lives at C:/Program Files (x86)/Nmap and adb " +
+    "platform tools are on PATH for Android devices). Full user privileges, no " +
+    "permission prompts; returns stdout/stderr plus the exit code; long outputs are " +
+    "tail-capped, so filter lists (e.g. 'adb shell pm list packages -3' for user apps " +
+    "only) instead of dumping thousands of lines. Android screenshots belong on this " +
+    "PC: cmd /c \"adb exec-out screencap -p > <file>.png\" (byte-safe; PowerShell " +
+    "redirection corrupts PNGs); adb shell screencap <path> saves on the phone instead " +
+    "(fetch with adb pull, clean with adb shell rm). Aim commands only at lab targets " +
+    "you are authorized to test; structured tools (port_scan, http_request) enforce " +
+    "target scoping.",
   parameters: {
     type: "object",
     properties: {
