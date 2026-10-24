@@ -42,7 +42,7 @@ Environment (`.env`):
 | `BANKAI_TOKEN` | Bearer token required on `/api/*` (open when unset) |
 | `DB_PATH` | SQLite file location |
 | `HOST` / `PORT` | Bind address |
-| `GROQ_API_KEY` | Groq API key - the default provider (`groq:llama-3.3-70b-versatile`); free key at console.groq.com |
+| `GROQ_API_KEY` | Groq API key - the default provider (`groq:openai/gpt-oss-120b`); free key at console.groq.com |
 | `OPENCODE_API_KEY` / `OPENAI_API_KEY` | Optional OpenCode (Zen) / OpenAI keys; use per-agent via `provider:model`. Note: OpenCode's `*-free` models only work inside the OpenCode client - API-key clients use its paid models |
 
 ## API

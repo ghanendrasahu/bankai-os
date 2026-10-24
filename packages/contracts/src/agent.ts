@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const DEFAULT_MODEL = "groq:llama-3.3-70b-versatile";
+export const DEFAULT_MODEL = "groq:openai/gpt-oss-120b";
 
 export const agentInputSchema = z.object({
   name: z.string().min(1).max(120),

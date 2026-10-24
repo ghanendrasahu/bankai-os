@@ -6,7 +6,7 @@ const EMPTY_FORM = {
   name: "",
   description: "",
   systemPrompt: "",
-  model: "groq:llama-3.3-70b-versatile",
+  model: "groq:openai/gpt-oss-120b",
   tools: "",
   enabled: true,
 };
