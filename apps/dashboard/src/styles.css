@@ -2644,6 +2644,10 @@ button.stack-row {
 }
 
 @media (max-width: 900px) {
+  .mobile-bar {
+    display: flex;
+  }
+
   .app > .sidebar {
     display: none;
   }
