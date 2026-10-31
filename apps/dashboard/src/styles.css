@@ -5,56 +5,56 @@
 
 :root {
   /* Surfaces */
-  --bg: #0c0e13;
-  --surface: #11141b;
-  --surface-2: #161a23;
-  --card: #151924;
-  --card-hover: #1a1f2b;
-  --elevated: #1c2130;
-  --inset: #0e1117;
+  --bg: #0b0d12;
+  --surface: #111521;
+  --surface-2: #151a27;
+  --card: #151a27;
+  --card-hover: #1a2030;
+  --elevated: #1b2131;
+  --inset: #0b0d12;
 
   /* Lines */
-  --border: #232937;
-  --border-soft: #1d2230;
-  --border-strong: #313a4e;
+  --border: #232b3d;
+  --border-soft: #1c2333;
+  --border-strong: #3a4661;
 
   /* Text */
-  --text: #e8ebf2;
-  --text-2: #a4adbe;
-  --text-3: #6f7889;
+  --text: #e8ebf5;
+  --text-2: #9aa4b8;
+  --text-3: #6c768c;
 
   /* Accent */
-  --accent: #6c8cff;
-  --accent-hover: #7d99ff;
-  --accent-active: #5a7bf2;
-  --accent-soft: rgba(108, 140, 255, 0.13);
-  --accent-border: rgba(108, 140, 255, 0.42);
+  --accent: #8b93ff;
+  --accent-hover: #9ba2ff;
+  --accent-active: #7a82f0;
+  --accent-soft: rgba(139, 147, 255, 0.13);
+  --accent-border: rgba(139, 147, 255, 0.42);
 
   /* Semantic */
-  --ok: #3fae76;
-  --ok-soft: rgba(63, 174, 118, 0.14);
-  --warn: #d9a13b;
-  --warn-soft: rgba(217, 161, 59, 0.14);
-  --danger: #e5586b;
-  --danger-hover: #ec6d7e;
-  --danger-soft: rgba(229, 88, 107, 0.14);
+  --ok: #46d39a;
+  --ok-soft: rgba(70, 211, 154, 0.14);
+  --warn: #f2b544;
+  --warn-soft: rgba(242, 181, 68, 0.14);
+  --danger: #f17c7c;
+  --danger-hover: #f59090;
+  --danger-soft: rgba(241, 124, 124, 0.14);
   --info: #56aef0;
   --info-soft: rgba(86, 174, 240, 0.13);
 
   /* Focus */
-  --ring: rgba(108, 140, 255, 0.55);
+  --ring: rgba(139, 147, 255, 0.55);
 
   /* Shape & depth */
-  --r-sm: 6px;
-  --r-md: 8px;
-  --r-lg: 10px;
-  --r-xl: 14px;
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 16px;
   --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.35);
   --shadow-2: 0 8px 28px rgba(0, 0, 0, 0.45);
   --shadow-3: 0 16px 56px rgba(0, 0, 0, 0.55);
 
   /* Type */
-  --font: "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font: "Inter", "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
 
   --fs-xs: 12px;
@@ -115,7 +115,7 @@ pre {
 }
 
 ::selection {
-  background: rgba(108, 140, 255, 0.3);
+  background: rgba(139, 147, 255, 0.3);
 }
 
 :focus-visible {
@@ -311,7 +311,7 @@ textarea {
 }
 
 .btn.tonal:hover:not(:disabled) {
-  background: rgba(108, 140, 255, 0.2);
+  background: rgba(139, 147, 255, 0.2);
 }
 
 .btn.ghost {
@@ -789,7 +789,7 @@ button.chip.active {
 
 .alert.error {
   background: var(--danger-soft);
-  border-color: rgba(229, 88, 107, 0.35);
+  border-color: rgba(241, 124, 124, 0.35);
   color: #f2a2ad;
 }
 
@@ -801,13 +801,13 @@ button.chip.active {
 
 .alert.ok {
   background: var(--ok-soft);
-  border-color: rgba(63, 174, 118, 0.35);
+  border-color: rgba(70, 211, 154, 0.35);
   color: #7fd3a5;
 }
 
 .alert.warn {
   background: var(--warn-soft);
-  border-color: rgba(217, 161, 59, 0.35);
+  border-color: rgba(242, 181, 68, 0.35);
   color: #e3bc72;
 }
 
@@ -1191,7 +1191,7 @@ button.chip.active {
   width: 30px;
   height: 30px;
   border-radius: var(--r-md);
-  background: linear-gradient(140deg, #7d99ff, #4c66d8);
+  background: linear-gradient(140deg, #a8aeff, #6f77e8);
   color: #0b0e1a;
   display: grid;
   place-content: center;
@@ -1374,7 +1374,7 @@ button.chip.active {
   justify-content: center;
   padding: 20px;
   background:
-    radial-gradient(700px 380px at 50% -8%, rgba(108, 140, 255, 0.09), transparent 62%),
+    radial-gradient(700px 380px at 50% -8%, rgba(139, 147, 255, 0.09), transparent 62%),
     var(--bg);
 }
 
@@ -1644,7 +1644,7 @@ button.chip.active {
 
 .bubble.streaming {
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 3px rgba(108, 140, 255, 0.07);
+  box-shadow: 0 0 0 3px rgba(139, 147, 255, 0.07);
 }
 
 .caret {
@@ -1952,7 +1952,7 @@ button.chip.active {
 }
 
 .send-btn.stop:hover:not(:disabled) {
-  background: rgba(229, 88, 107, 0.28);
+  background: rgba(241, 124, 124, 0.28);
   color: var(--danger-hover);
 }
 

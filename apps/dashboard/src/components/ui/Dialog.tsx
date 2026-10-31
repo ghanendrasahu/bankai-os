@@ -135,7 +135,7 @@ export function ConfirmDialog({
           <button
             type="button"
             className={danger ? "btn primary" : "btn primary"}
-            style={danger ? { background: "var(--danger)", color: "#1a0d10" } : undefined}
+            style={danger ? { background: "var(--danger)", color: "var(--bg)" } : undefined}
             onClick={onConfirm}
             disabled={busy}
           >
