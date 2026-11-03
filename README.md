@@ -7,6 +7,10 @@ SQLite — with a React dashboard on top.
 The API is the product surface; the packages underneath it (agents, tasks,
 tools, database, config) are independently usable.
 
+> **Live demo:** https://bankai-os.onrender.com
+>
+> Free-tier hosting: the first load after idle can take 30-60 seconds.
+
 ## Architecture
 
 ```mermaid
