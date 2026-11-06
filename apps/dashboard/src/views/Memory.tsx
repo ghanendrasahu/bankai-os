@@ -26,6 +26,7 @@ export function Memory() {
   const [agentId, setAgentId] = useState("");
   const [entries, setEntries] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [memLoading, setMemLoading] = useState(false);
   const [banner, setBanner] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<"all" | Kind>("all");
   const [search, setSearch] = useState("");
@@ -54,11 +55,13 @@ export function Memory() {
   }, [loadAgents]);
 
   useEffect(() => {
-    if (!agentId) {
-      setEntries([]);
-      return;
-    }
+    // Reset as soon as the agent changes — never show another agent's entries.
+    setEntries([]);
+    setBanner(null);
+    setError(null);
+    if (!agentId) return;
     let cancelled = false;
+    setMemLoading(true);
     void (async () => {
       try {
         const list = await api.get<Memory[]>(`/agents/${encodeURIComponent(agentId)}/memory`);
@@ -67,7 +70,13 @@ export function Memory() {
           setBanner(null);
         }
       } catch (e) {
-        if (!cancelled) setBanner((e as Error).message);
+        // Failed load → empty list + banner, never stale rows from the previous agent.
+        if (!cancelled) {
+          setEntries([]);
+          setBanner((e as Error).message);
+        }
+      } finally {
+        if (!cancelled) setMemLoading(false);
       }
     })();
     return () => {
@@ -242,7 +251,9 @@ export function Memory() {
           </div>
 
           {/* list */}
-          {entries.length === 0 ? (
+          {memLoading ? (
+            <Skeleton />
+          ) : entries.length === 0 ? (
             <EmptyState
               icon="memory"
               title="Nothing memorized yet"
